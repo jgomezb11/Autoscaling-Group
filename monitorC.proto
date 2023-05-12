@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+
+message Request {
+  int32 code = 1;
+}
+
+message StatusResponse {
+  string status = 1;
+}
+
+message MemoryUsageResponse {
+  int32 usage = 1;
+}
+
+service MonitorC {
+  rpc GetStatus (StatusResponse) returns (StatusResponse) {}
+  rpc GetMemoryUsage (MemoryUsageResponse) returns (MemoryUsageResponse) {}
+}
