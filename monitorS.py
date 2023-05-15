@@ -27,6 +27,11 @@ def get_memory_usage(host, port):
     return memory_usage_response.usage
 
 
+def update_from_database():
+    while True:
+        a =1
+
+
 def get_status_loop():
     while True:
         for monitorc_host in MONITORC_HOSTS:
@@ -52,11 +57,25 @@ def get_average_memory_usage():
         print("aaaaaaaaaaaaaaaaaaa", average_memory_usage)
         time.sleep(5)
 
-
 if __name__ == '__main__':
     memory_thread = threading.Thread(target=get_average_memory_usage, daemon=True)
     status_thread = threading.Thread(target=get_status_loop, daemon=True)
+    updates = threading.Thread(target=update_from_database, daemon=True)
     memory_thread.start()
     status_thread.start()
+    updates.start()
     memory_thread.join()
     status_thread.join()
+    updates.join()
+
+
+{
+    host: [str],
+    ports: [int],
+    average_memory: int,
+    status: [bool],
+    minInstances: int,
+    maxInstances: int,
+    politicaDestruccion: int,
+    politicaCreacion: int
+}
