@@ -1,12 +1,6 @@
 import time
 import boto3
-
-# Configuración del autoescalado simulado
-min_instances = 1
-max_instances = 5
-cpu_threshold = 70
-scale_up_factor = 2
-scale_down_factor = 0.5
+from pymongo import MongoClient
 
 # Crea una instancia del cliente EC2 de AWS
 ec2_client = boto3.client('ec2')
@@ -19,8 +13,22 @@ def create_instances(count):
         MinCount=count,
         MaxCount=count
     )
-    instance_ids = [instance['InstanceId'] for instance in response['Instances']]
+    instance_ids = []
+    configuration = collection.find_one()
+    for instance in response["Instances"]:
+        instance_ids.append(instance["InstanceId"])
+        newHost = {
+            "id_instance":instance["InstanceId"],
+            "ip":get_public_ip(instance["InstanceId"])
+        }
+        configuration["hosts"].append(newHost)
+    collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
     print(f'Se han creado {count} nuevas instancias: {instance_ids}')
+
+def get_public_ip(instance_id):
+    response = ec2_client.describe_instances(InstanceIds=[instance_id])
+    public_ip = response['Reservations'][0]['Instances'][0]['PublicIpAddress']
+    return public_ip
 
 def terminate_instances(count):
     response = ec2_client.describe_instances(
@@ -34,8 +42,12 @@ def terminate_instances(count):
     instances = response['Reservations']
     instances_to_terminate = instances[:count]
     instance_ids = []
+    configuration = collection.find_one()
     for i in range(0, count):
         instance_ids.append(instances_to_terminate[i]['Instances'][0]['InstanceId'])
+        hosts_filtrados = [host for host in configuration["hosts"] if host['id_instance'] != instance_ids[-1]]
+        configuration["hosts"] = hosts_filtrados
+    collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
 
     # Termina las instancias seleccionadas
     response = ec2_client.terminate_instances(
@@ -44,7 +56,7 @@ def terminate_instances(count):
     print(f'Se han terminado {count} instancias: {instance_ids}')
 
 def monitor_cpu_usage():
-    return 20
+    return collection.find_one()["average_memory"]
 
 def scale_instances():
     # Obtiene el número actual de instancias activas
@@ -74,6 +86,16 @@ def scale_instances():
         terminate_instances(instances_to_terminate)
 
 if __name__ == '__main__':
+    global client, database, collection, min_instances, max_instances, cpu_threshold, scale_up_factor, scale_down_factor
+    client = MongoClient("mongodb://localhost:27017")
+    database = client["ASG"]
+    collection = database["config"]
+    config = collection.find_one()
+    min_instances = config["min_instances"]
+    max_instances = config["max_instances"]
+    cpu_threshold = config["cpu_threshold"]
+    scale_up_factor = config["scale_up_factor"]
+    scale_down_factor = config["scale_down_factor"]
     while True:
         # Ejecuta la lógica de escalado cada X segundos
         scale_instances()
