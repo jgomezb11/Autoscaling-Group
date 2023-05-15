@@ -4,9 +4,9 @@ import boto3
 # Configuración del autoescalado simulado
 min_instances = 1
 max_instances = 5
-cpu_threshold = 70  # Umbral de uso de CPU para activar el escalado
-scale_up_factor = 2  # Factor de escalado para crear nuevas instancias
-scale_down_factor = 0.5  # Factor de escalado para terminar instancias
+cpu_threshold = 70
+scale_up_factor = 2
+scale_down_factor = 0.5
 
 # Crea una instancia del cliente EC2 de AWS
 ec2_client = boto3.client('ec2')
@@ -14,8 +14,8 @@ ec2_client = boto3.client('ec2')
 def create_instances(count):
     # Crea nuevas instancias EC2
     response = ec2_client.run_instances(
-        ImageId='ami-12345678',  # ID de la imagen AMI
-        InstanceType='t2.micro',  # Tipo de instancia
+        ImageId='ami-0f09de67419a5c3c1',
+        InstanceType='t2.micro',
         MinCount=count,
         MaxCount=count
     )
@@ -23,7 +23,6 @@ def create_instances(count):
     print(f'Se han creado {count} nuevas instancias: {instance_ids}')
 
 def terminate_instances(count):
-    # Obtiene las instancias activas
     response = ec2_client.describe_instances(
         Filters=[
             {
@@ -32,9 +31,11 @@ def terminate_instances(count):
             }
         ]
     )
-    instances = response['Reservations'][0]['Instances']
+    instances = response['Reservations']
     instances_to_terminate = instances[:count]
-    instance_ids = [instance['InstanceId'] for instance in instances_to_terminate]
+    instance_ids = []
+    for i in range(0, count):
+        instance_ids.append(instances_to_terminate[i]['Instances'][0]['InstanceId'])
 
     # Termina las instancias seleccionadas
     response = ec2_client.terminate_instances(
@@ -42,8 +43,8 @@ def terminate_instances(count):
     )
     print(f'Se han terminado {count} instancias: {instance_ids}')
 
-def monitor_cpu_usage(instance_id):
-    return 1
+def monitor_cpu_usage():
+    return 20
 
 def scale_instances():
     # Obtiene el número actual de instancias activas
@@ -55,15 +56,17 @@ def scale_instances():
             }
         ]
     )
-    instance_count = len(response['Reservations'][0]['Instances'])
-
-    # Obtiene el uso de CPU de una instancia (puede ser el promedio de todas las instancias)
-    instance_id = response['Reservations'][0]['Instances'][0]['InstanceId']
-    cpu_usage = monitor_cpu_usage(instance_id)
+    try:
+        instance_count = len(response['Reservations'])
+    except:
+        instance_count = 0
+    cpu_usage = monitor_cpu_usage()
 
     # Realiza la lógica de escalado
     if cpu_usage > cpu_threshold and instance_count < max_instances:
         new_instance_count = min(max_instances, instance_count * scale_up_factor)
+        if new_instance_count == 0:
+            new_instance_count = 1
         instances_to_create = new_instance_count - instance_count
         create_instances(instances_to_create)
     elif cpu_usage < cpu_threshold and instance_count > min_instances:
@@ -74,6 +77,4 @@ if __name__ == '__main__':
     while True:
         # Ejecuta la lógica de escalado cada X segundos
         scale_instances()
-
-        # Espera un tiempo antes de volver a ejecutar la lógica
-        time.sleep(60)  # Espera 60 segundos antes de la siguiente iteración
+        time.sleep(30)  # Espera 60 segundos antes de la siguiente iteración
