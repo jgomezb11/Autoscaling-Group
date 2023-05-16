@@ -12,8 +12,7 @@ class MonitorCServicer():
         self.memory_usage = 0
 
     def GetStatus(self, request, context):
-        if self.is_running:
-            return StatusResponse(status="OK")
+        return StatusResponse(status="OK")
 
     def GetMemoryUsage(self, request, context):
         global x
