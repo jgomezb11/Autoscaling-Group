@@ -11,10 +11,18 @@ average_memory = 0
 MONITORC_HOSTS = []
 
 def get_status(host, port):
-    channel = grpc.insecure_channel(f'{host}:{port}')
-    monitorc_stub = MonitorCStub(channel)
-    status_response = monitorc_stub.GetStatus(Request(code=0))
-    return status_response.status
+    status = ""
+    for i in range(0,3):
+        try:
+            channel = grpc.insecure_channel(f'{host}:{port}')
+            monitorc_stub = MonitorCStub(channel)
+            status_response = monitorc_stub.GetStatus(Request(code=0))
+            if status_response is "OK":
+                status = True
+                break
+        except:
+            status = False
+    return status
 
 def get_memory_usage(host, port):
     channel = grpc.insecure_channel(f'{host}:{port}')
@@ -26,22 +34,22 @@ def update_from_database():
     global MONITORC_HOSTS
     while True:
         current_hosts = []
-        for host in collection.find_one()["hosts"]:
-            current_hosts.append(host["ip"])
+        col = collection.find_one()
+        for host, status in (col["hosts"], col["status"]):
+            if status or not status:
+                current_hosts.append(host["ip"])
         MONITORC_HOSTS = current_hosts
 
 def get_status_loop():
     while True:
         index = 0
         for monitorc_host in MONITORC_HOSTS:
-            host = monitorc_host['host']
-            port = monitorc_host['port']
-            status = get_status(host, port)
+            host = monitorc_host
+            status = get_status(host, "50051")
             configuration = collection.find_one()
             configuration["status"][index] = status
             collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
             index += 1
-            print("bbbbbbbbbbbbbbbbbbb", status)
         time.sleep(2)
 
 def get_average_memory_usage():
@@ -50,16 +58,14 @@ def get_average_memory_usage():
         num_hosts = len(MONITORC_HOSTS)
 
         for monitorc_host in MONITORC_HOSTS:
-            host = monitorc_host['host']
-            port = monitorc_host['port']
-            memory_usage = get_memory_usage(host, port)
+            host = monitorc_host
+            memory_usage = get_memory_usage(host, "50051")
             total_memory_usage += memory_usage
 
         average_memory_usage = total_memory_usage // num_hosts
         configuration = collection.find_one()
         configuration["average_memory"] = average_memory_usage
         collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
-        print("aaaaaaaaaaaaaaaaaaa", average_memory_usage)
         time.sleep(5)
 
 if __name__ == '__main__':
@@ -70,9 +76,10 @@ if __name__ == '__main__':
     memory_thread = threading.Thread(target=get_average_memory_usage, daemon=True)
     status_thread = threading.Thread(target=get_status_loop, daemon=True)
     updates = threading.Thread(target=update_from_database, daemon=True)
+    updates.start()
+    time.sleep(1)
     memory_thread.start()
     status_thread.start()
-    updates.start()
     memory_thread.join()
     status_thread.join()
     updates.join()

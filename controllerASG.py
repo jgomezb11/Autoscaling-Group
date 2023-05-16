@@ -15,6 +15,7 @@ def create_instances(count):
     )
     instance_ids = []
     configuration = collection.find_one()
+    time.sleep(5)
     for instance in response["Instances"]:
         instance_ids.append(instance["InstanceId"])
         newHost = {
@@ -27,39 +28,33 @@ def create_instances(count):
 
 def get_public_ip(instance_id):
     response = ec2_client.describe_instances(InstanceIds=[instance_id])
-    public_ip = response['Reservations'][0]['Instances'][0]['PublicIpAddress']
+    public_ip = response['Reservations'][0]['Instances'][0].get('PublicIpAddress')
+    while not public_ip:
+        response = ec2_client.describe_instances(InstanceIds=[instance_id])
+        public_ip = response['Reservations'][0]['Instances'][0].get('PublicIpAddress')
     return public_ip
 
 def terminate_instances(count):
-    response = ec2_client.describe_instances(
-        Filters=[
-            {
-                'Name': 'instance-state-name',
-                'Values': ['running']
-            }
-        ]
-    )
-    instances = response['Reservations']
-    instances_to_terminate = instances[:count]
     instance_ids = []
     configuration = collection.find_one()
-    for i in range(0, count):
-        instance_ids.append(instances_to_terminate[i]['Instances'][0]['InstanceId'])
-        hosts_filtrados = [host for host in configuration["hosts"] if host['id_instance'] != instance_ids[-1]]
-        configuration["hosts"] = hosts_filtrados
+    hosts = configuration["hosts"]
+    for host in hosts:
+        instance_ids.append(host['id_instance'])
+    instances_to_terminate = instance_ids[:count]
+    hosts_filtrados = [host for host in configuration["hosts"] if host['id_instance'] not in instances_to_terminate]
+    configuration['hosts'] = hosts_filtrados
     collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
 
     # Termina las instancias seleccionadas
     response = ec2_client.terminate_instances(
-        InstanceIds=instance_ids
+        InstanceIds=instances_to_terminate
     )
-    print(f'Se han terminado {count} instancias: {instance_ids}')
+    print(f'Se han terminado {count} instancias: {instances_to_terminate}')
 
 def monitor_cpu_usage():
     return collection.find_one()["average_memory"]
 
 def scale_instances():
-    # Obtiene el número actual de instancias activas
     response = ec2_client.describe_instances(
         Filters=[
             {
@@ -68,13 +63,12 @@ def scale_instances():
             }
         ]
     )
-    try:
-        instance_count = len(response['Reservations'])
-    except:
-        instance_count = 0
+    instance_count = 0
+    for group in response['Reservations']:
+        instance_count += len(group['Instances'])
+    print(instance_count)
     cpu_usage = monitor_cpu_usage()
 
-    # Realiza la lógica de escalado
     if cpu_usage > cpu_threshold and instance_count < max_instances:
         new_instance_count = min(max_instances, instance_count * scale_up_factor)
         if new_instance_count == 0:
@@ -82,7 +76,7 @@ def scale_instances():
         instances_to_create = new_instance_count - instance_count
         create_instances(instances_to_create)
     elif cpu_usage < cpu_threshold and instance_count > min_instances:
-        instances_to_terminate = instance_count - min_instances
+        instances_to_terminate = int(max(instance_count * scale_down_factor, min_instances))
         terminate_instances(instances_to_terminate)
 
 if __name__ == '__main__':
@@ -99,4 +93,4 @@ if __name__ == '__main__':
     while True:
         # Ejecuta la lógica de escalado cada X segundos
         scale_instances()
-        time.sleep(30)  # Espera 60 segundos antes de la siguiente iteración
+        time.sleep(60)  # Espera 60 segundos antes de la siguiente iteración
