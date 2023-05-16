@@ -16,12 +16,12 @@ class MonitorCStub(object):
         """
         self.GetStatus = channel.unary_unary(
                 '/MonitorC/GetStatus',
-                request_serializer=monitorC__pb2.StatusResponse.SerializeToString,
+                request_serializer=monitorC__pb2.Request.SerializeToString,
                 response_deserializer=monitorC__pb2.StatusResponse.FromString,
                 )
         self.GetMemoryUsage = channel.unary_unary(
                 '/MonitorC/GetMemoryUsage',
-                request_serializer=monitorC__pb2.MemoryUsageResponse.SerializeToString,
+                request_serializer=monitorC__pb2.Request.SerializeToString,
                 response_deserializer=monitorC__pb2.MemoryUsageResponse.FromString,
                 )
 
@@ -46,12 +46,12 @@ def add_MonitorCServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetStatus': grpc.unary_unary_rpc_method_handler(
                     servicer.GetStatus,
-                    request_deserializer=monitorC__pb2.StatusResponse.FromString,
+                    request_deserializer=monitorC__pb2.Request.FromString,
                     response_serializer=monitorC__pb2.StatusResponse.SerializeToString,
             ),
             'GetMemoryUsage': grpc.unary_unary_rpc_method_handler(
                     servicer.GetMemoryUsage,
-                    request_deserializer=monitorC__pb2.MemoryUsageResponse.FromString,
+                    request_deserializer=monitorC__pb2.Request.FromString,
                     response_serializer=monitorC__pb2.MemoryUsageResponse.SerializeToString,
             ),
     }
@@ -76,7 +76,7 @@ class MonitorC(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/MonitorC/GetStatus',
-            monitorC__pb2.StatusResponse.SerializeToString,
+            monitorC__pb2.Request.SerializeToString,
             monitorC__pb2.StatusResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -93,7 +93,7 @@ class MonitorC(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/MonitorC/GetMemoryUsage',
-            monitorC__pb2.MemoryUsageResponse.SerializeToString,
+            monitorC__pb2.Request.SerializeToString,
             monitorC__pb2.MemoryUsageResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

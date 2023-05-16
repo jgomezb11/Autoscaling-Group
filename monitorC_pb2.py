@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0emonitorC.proto\"\x17\n\x07Request\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\" \n\x0eStatusResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\"$\n\x13MemoryUsageResponse\x12\r\n\x05usage\x18\x01 \x01(\x05\x32{\n\x08MonitorC\x12/\n\tGetStatus\x12\x0f.StatusResponse\x1a\x0f.StatusResponse\"\x00\x12>\n\x0eGetMemoryUsage\x12\x14.MemoryUsageResponse\x1a\x14.MemoryUsageResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0emonitorC.proto\"\x17\n\x07Request\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\" \n\x0eStatusResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\"$\n\x13MemoryUsageResponse\x12\r\n\x05usage\x18\x01 \x01(\x05\x32h\n\x08MonitorC\x12(\n\tGetStatus\x12\x08.Request\x1a\x0f.StatusResponse\"\x00\x12\x32\n\x0eGetMemoryUsage\x12\x08.Request\x1a\x14.MemoryUsageResponse\"\x00\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'monitorC_pb2', globals())
@@ -27,5 +27,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _MEMORYUSAGERESPONSE._serialized_start=77
   _MEMORYUSAGERESPONSE._serialized_end=113
   _MONITORC._serialized_start=115
-  _MONITORC._serialized_end=238
+  _MONITORC._serialized_end=219
 # @@protoc_insertion_point(module_scope)

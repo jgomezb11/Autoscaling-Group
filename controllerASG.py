@@ -37,8 +37,7 @@ def get_public_ip(instance_id):
 def terminate_instances(count):
     instance_ids = []
     configuration = collection.find_one()
-    hosts = configuration["hosts"]
-    for host in hosts:
+    for host in configuration["hosts"]:
         instance_ids.append(host['id_instance'])
     instances_to_terminate = instance_ids[:count]
     hosts_filtrados = [host for host in configuration["hosts"] if host['id_instance'] not in instances_to_terminate]

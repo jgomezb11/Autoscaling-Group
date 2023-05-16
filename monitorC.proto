@@ -14,6 +14,6 @@ message MemoryUsageResponse {
 }
 
 service MonitorC {
-  rpc GetStatus (StatusResponse) returns (StatusResponse) {}
-  rpc GetMemoryUsage (MemoryUsageResponse) returns (MemoryUsageResponse) {}
+  rpc GetStatus (Request) returns (StatusResponse) {}
+  rpc GetMemoryUsage (Request) returns (MemoryUsageResponse) {}
 }
