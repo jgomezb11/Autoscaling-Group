@@ -36,9 +36,9 @@ def update_from_database():
         current_hosts = []
         col = collection.find_one()
         if len(col['hosts']) != 0:
-            for host, status in (col["hosts"], col["status"]):
-                if status["state"]:
-                    current_hosts.append(host["ip"])
+            for i in range(len(col["hosts"])):
+                if col["status"][i]["state"]:
+                    current_hosts.append(col["hosts"][i]["ip"])
             MONITORC_HOSTS = current_hosts
 
 def get_status_loop():

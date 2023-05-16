@@ -8,7 +8,7 @@ ec2_client = boto3.client('ec2')
 def create_instances(count):
     # Crea nuevas instancias EC2
     response = ec2_client.run_instances(
-        ImageId='ami-0f5d4151b65ba5228',
+        ImageId='ami-06237a78188e9210d',
         InstanceType='t2.micro',
         MinCount=count,
         MaxCount=count
