@@ -8,10 +8,11 @@ ec2_client = boto3.client('ec2')
 def create_instances(count):
     # Crea nuevas instancias EC2
     response = ec2_client.run_instances(
-        ImageId='ami-06237a78188e9210d',
+        ImageId='ami-057fdd985f1bcf237',
         InstanceType='t2.micro',
         MinCount=count,
-        MaxCount=count
+        MaxCount=count,
+        SecurityGroupIds=["sg-025b36a67c4532340"]
     )
     instance_ids = []
     configuration = collection.find_one()
@@ -24,7 +25,7 @@ def create_instances(count):
         }
         newStatus = {
             "id_instance":instance["InstanceId"],
-            "state": True
+            "state": False
         }
         configuration["hosts"].append(newHost)
         configuration["status"].append(newStatus)
@@ -72,28 +73,34 @@ def scale_instances():
     instance_count = 0
     for group in response['Reservations']:
         instance_count += len(group['Instances'])
-    print(instance_count)
     cpu_usage = monitor_cpu_usage()
 
-    if cpu_usage > cpu_threshold and instance_count < max_instances:
+    if instance_count == 0:
+        configuration = collection.find_one()
+        configuration['hosts'] = []
+        configuration['status'] = []
+        collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
+
+    if (cpu_usage > cpu_up_threshold and instance_count < max_instances) or instance_count < min_instances:
         new_instance_count = min(max_instances, instance_count * scale_up_factor)
         if new_instance_count == 0:
             new_instance_count = 1
         instances_to_create = new_instance_count - instance_count
         create_instances(instances_to_create)
-    elif cpu_usage < cpu_threshold and instance_count > min_instances:
+    elif cpu_usage < cpu_down_threshold and instance_count > min_instances:
         instances_to_terminate = int(max(instance_count * scale_down_factor, min_instances))
         terminate_instances(instances_to_terminate)
 
 if __name__ == '__main__':
-    global client, database, collection, min_instances, max_instances, cpu_threshold, scale_up_factor, scale_down_factor
+    global client, database, collection, min_instances, max_instances, cpu_up_threshold, cpu_down_threshold,scale_up_factor, scale_down_factor
     client = MongoClient("mongodb://localhost:27017")
     database = client["ASG"]
     collection = database["config"]
     config = collection.find_one()
     min_instances = config["min_instances"]
     max_instances = config["max_instances"]
-    cpu_threshold = config["cpu_threshold"]
+    cpu_up_threshold = config["cpu_up_threshold"]
+    cpu_down_threshold = config["cpu_down_threshold"]
     scale_up_factor = config["scale_up_factor"]
     scale_down_factor = config["scale_down_factor"]
     while True:

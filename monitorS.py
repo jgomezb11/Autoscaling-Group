@@ -11,13 +11,13 @@ average_memory = 0
 MONITORC_HOSTS = []
 
 def get_status(host, port):
-    status = ""
+    status = False
     for i in range(0,3):
         try:
             channel = grpc.insecure_channel(f'{host}:{port}')
             monitorc_stub = MonitorCStub(channel)
             status_response = monitorc_stub.GetStatus(Request(code=0))
-            if status_response == "OK":
+            if status_response.status == "OK":
                 status = True
                 break
         except:
@@ -44,8 +44,8 @@ def update_from_database():
 def get_status_loop():
     while True:
         index = 0
-        for monitorc_host in MONITORC_HOSTS:
-            host = monitorc_host
+        for monitorc_host in collection.find_one()['hosts']:
+            host = monitorc_host['ip']
             status = get_status(host, "50051")
             configuration = collection.find_one()
             configuration["status"][index]["state"] = status
@@ -58,13 +58,16 @@ def get_average_memory_usage():
         total_memory_usage = 0
         num_hosts = len(MONITORC_HOSTS)
         if num_hosts != 0:
+            configuration = collection.find_one()
+            index = 0
             for monitorc_host in MONITORC_HOSTS:
                 host = monitorc_host
                 memory_usage = get_memory_usage(host, "50051")
+                configuration["status"][index]["memory_usage"] = memory_usage
                 total_memory_usage += memory_usage
+                index += 1
 
             average_memory_usage = total_memory_usage // num_hosts
-            configuration = collection.find_one()
             configuration["average_memory"] = average_memory_usage
             collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
             time.sleep(5)
