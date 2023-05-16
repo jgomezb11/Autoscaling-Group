@@ -8,7 +8,7 @@ ec2_client = boto3.client('ec2')
 def create_instances(count):
     # Crea nuevas instancias EC2
     response = ec2_client.run_instances(
-        ImageId='ami-0f09de67419a5c3c1',
+        ImageId='ami-0f5d4151b65ba5228',
         InstanceType='t2.micro',
         MinCount=count,
         MaxCount=count
@@ -22,7 +22,12 @@ def create_instances(count):
             "id_instance":instance["InstanceId"],
             "ip":get_public_ip(instance["InstanceId"])
         }
+        newStatus = {
+            "id_instance":instance["InstanceId"],
+            "state": True
+        }
         configuration["hosts"].append(newHost)
+        configuration["status"].append(newStatus)
     collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
     print(f'Se han creado {count} nuevas instancias: {instance_ids}')
 
@@ -41,7 +46,9 @@ def terminate_instances(count):
         instance_ids.append(host['id_instance'])
     instances_to_terminate = instance_ids[:count]
     hosts_filtrados = [host for host in configuration["hosts"] if host['id_instance'] not in instances_to_terminate]
+    status_filtrados = [host for host in configuration["status"] if host['id_instance'] not in instances_to_terminate]
     configuration['hosts'] = hosts_filtrados
+    configuration['status'] = status_filtrados
     collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
 
     # Termina las instancias seleccionadas

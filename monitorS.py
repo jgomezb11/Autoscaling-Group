@@ -17,7 +17,7 @@ def get_status(host, port):
             channel = grpc.insecure_channel(f'{host}:{port}')
             monitorc_stub = MonitorCStub(channel)
             status_response = monitorc_stub.GetStatus(Request(code=0))
-            if status_response is "OK":
+            if status_response == "OK":
                 status = True
                 break
         except:
@@ -35,10 +35,11 @@ def update_from_database():
     while True:
         current_hosts = []
         col = collection.find_one()
-        for host, status in (col["hosts"], col["status"]):
-            if status or not status:
-                current_hosts.append(host["ip"])
-        MONITORC_HOSTS = current_hosts
+        if len(col['hosts']) != 0:
+            for host, status in (col["hosts"], col["status"]):
+                if status["state"]:
+                    current_hosts.append(host["ip"])
+            MONITORC_HOSTS = current_hosts
 
 def get_status_loop():
     while True:
@@ -47,7 +48,7 @@ def get_status_loop():
             host = monitorc_host
             status = get_status(host, "50051")
             configuration = collection.find_one()
-            configuration["status"][index] = status
+            configuration["status"][index]["state"] = status
             collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
             index += 1
         time.sleep(2)
@@ -56,17 +57,17 @@ def get_average_memory_usage():
     while True:
         total_memory_usage = 0
         num_hosts = len(MONITORC_HOSTS)
+        if num_hosts != 0:
+            for monitorc_host in MONITORC_HOSTS:
+                host = monitorc_host
+                memory_usage = get_memory_usage(host, "50051")
+                total_memory_usage += memory_usage
 
-        for monitorc_host in MONITORC_HOSTS:
-            host = monitorc_host
-            memory_usage = get_memory_usage(host, "50051")
-            total_memory_usage += memory_usage
-
-        average_memory_usage = total_memory_usage // num_hosts
-        configuration = collection.find_one()
-        configuration["average_memory"] = average_memory_usage
-        collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
-        time.sleep(5)
+            average_memory_usage = total_memory_usage // num_hosts
+            configuration = collection.find_one()
+            configuration["average_memory"] = average_memory_usage
+            collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
+            time.sleep(5)
 
 if __name__ == '__main__':
     global client, database, collection
@@ -88,7 +89,7 @@ if __name__ == '__main__':
 '''{
     hosts: [{id_instance:str, ip:str}],
     average_memory: int,
-    status: [bool],
+    status: [{id_instance:str,state:bool}],
     min_instances: int,
     max_instances: int,
     cpu_threshold: int,
