@@ -1,0 +1,90 @@
+/* Estilos generales */
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap');
+
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 40px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 0.2fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input[type="number"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+input[type="number"]:focus {
+    outline: none;
+    box-shadow: 0 0 5px #007BFF;
+}
+
+input[type="number"]::placeholder {
+    color: #999;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+#output-container{
+    color: orangered;
+    margin-bottom: 20px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button:active {
+    background-color: #003380;
+}
+
+/* Estilos de la sección de instancias */
+#instancias {
+    margin-top: 30px;
+}
+
+#graphs-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.graph-container {
+    flex: 0 0 48%;
+    max-width: 48%;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+.graph-container h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}

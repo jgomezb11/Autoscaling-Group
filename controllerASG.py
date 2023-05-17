@@ -8,11 +8,11 @@ ec2_client = boto3.client('ec2')
 def create_instances(count):
     # Crea nuevas instancias EC2
     response = ec2_client.run_instances(
-        ImageId='ami-057fdd985f1bcf237',
+        ImageId='ami-06237a78188e9210d',
         InstanceType='t2.micro',
         MinCount=count,
         MaxCount=count,
-        SecurityGroupIds=["sg-025b36a67c4532340"]
+        SecurityGroupIds=["sg-0f73bac629f76380c"]
     )
     instance_ids = []
     configuration = collection.find_one()
@@ -25,11 +25,20 @@ def create_instances(count):
         }
         newStatus = {
             "id_instance":instance["InstanceId"],
-            "state": False
+            "state": False,
+            "isReady": False,
+            "memory_usage":[],
+            "time_stap":[]
         }
         configuration["hosts"].append(newHost)
         configuration["status"].append(newStatus)
-    collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
+    changes = {
+        'hosts':configuration["hosts"],
+        'status':configuration["status"]
+    }
+    response = collection.update_one({'_id': configuration['_id']}, {'$set': changes})
+    while not response.acknowledged:
+        response = collection.update_one({'_id': configuration['_id']}, {'$set': changes})
     print(f'Se han creado {count} nuevas instancias: {instance_ids}')
 
 def get_public_ip(instance_id):
@@ -48,9 +57,13 @@ def terminate_instances(count):
     instances_to_terminate = instance_ids[:count]
     hosts_filtrados = [host for host in configuration["hosts"] if host['id_instance'] not in instances_to_terminate]
     status_filtrados = [host for host in configuration["status"] if host['id_instance'] not in instances_to_terminate]
-    configuration['hosts'] = hosts_filtrados
-    configuration['status'] = status_filtrados
-    collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
+    changes = {
+        'hosts':hosts_filtrados,
+        'status':status_filtrados
+    }
+    response = collection.update_one({'_id': configuration['_id']}, {'$set': changes})
+    while not response.acknowledged:
+        response = collection.update_one({'_id': configuration['_id']}, {'$set': changes})
 
     # Termina las instancias seleccionadas
     response = ec2_client.terminate_instances(
@@ -77,9 +90,13 @@ def scale_instances():
 
     if instance_count == 0:
         configuration = collection.find_one()
-        configuration['hosts'] = []
-        configuration['status'] = []
-        collection.update_one({'_id': configuration['_id']}, {'$set': configuration})
+        changes = {
+            'hosts':[],
+            'status':[]
+        }
+        response = collection.update_one({'_id': configuration['_id']}, {'$set': changes})
+        while not response.acknowledged:
+            response = collection.update_one({'_id': configuration['_id']}, {'$set': changes})
 
     if (cpu_usage > cpu_up_threshold and instance_count < max_instances) or instance_count < min_instances:
         new_instance_count = min(max_instances, instance_count * scale_up_factor)
@@ -96,14 +113,14 @@ if __name__ == '__main__':
     client = MongoClient("mongodb://localhost:27017")
     database = client["ASG"]
     collection = database["config"]
-    config = collection.find_one()
-    min_instances = config["min_instances"]
-    max_instances = config["max_instances"]
-    cpu_up_threshold = config["cpu_up_threshold"]
-    cpu_down_threshold = config["cpu_down_threshold"]
-    scale_up_factor = config["scale_up_factor"]
-    scale_down_factor = config["scale_down_factor"]
     while True:
         # Ejecuta la lógica de escalado cada X segundos
+        config = collection.find_one()
+        min_instances = config["min_instances"]
+        max_instances = config["max_instances"]
+        cpu_up_threshold = config["cpu_up_threshold"]
+        cpu_down_threshold = config["cpu_down_threshold"]
+        scale_up_factor = config["scale_up_factor"]
+        scale_down_factor = config["scale_down_factor"]
         scale_instances()
         time.sleep(60)  # Espera 60 segundos antes de la siguiente iteración
