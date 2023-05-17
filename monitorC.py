@@ -16,7 +16,7 @@ class MonitorCServicer():
 
     def GetMemoryUsage(self, request, context):
         global x
-        self.memory_usage = int(abs(math.sin(x*0.0157)*100))
+        self.memory_usage = int(abs(math.sin(x*0.07)*100))
         x += 1
         return MemoryUsageResponse(usage=self.memory_usage)
 
