@@ -1,8 +1,5 @@
 FROM python:3.11.2
 
-COPY credentials ~/.aws/credentials
-COPY config ~/.aws/config
-
 COPY . /app
 
 WORKDIR /app

@@ -6,8 +6,14 @@ import time
 from dotenv import load_dotenv
 import os
 
-ec2_client = boto3.client("ec2")
+load_dotenv()
 
+ec2_client = boto3.client(
+    'ec2',
+    aws_access_key_id=os.getenv("ACCESS_KEY"),
+    aws_secret_access_key=os.getenv("SECRET_KEY"),
+    aws_session_token=os.getenv("SESSION_TOKEN")
+)
 
 def create_instances(count):
     response = ec2_client.run_instances(
@@ -243,7 +249,6 @@ def update_from_database():
 
 if __name__ == "__main__":
     global client, database, collection, min_instances, max_instances, cpu_up_threshold, cpu_down_threshold, scale_up_factor, scale_down_factor
-    load_dotenv()
     client = MongoClient(
         "mongodb://" + os.getenv("IPMONGO") + ":" + os.getenv("PORTMONGO")
     )

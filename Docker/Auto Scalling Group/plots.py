@@ -7,6 +7,9 @@ import plotly.graph_objs as go
 import pandas as pd
 from pymongo import MongoClient
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = MongoClient(
     "mongodb://" + os.getenv("IPMONGO") + ":" + os.getenv("PORTMONGO")
@@ -216,4 +219,4 @@ def update_graphs(n):
     return graphs
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=8080)
+    app.run_server(debug=True, port=8080, host='0.0.0.0')
