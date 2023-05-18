@@ -54,8 +54,11 @@ button {
 }
 
 #output-container{
-    color: orangered;
     margin-bottom: 20px;
+}
+
+#label-output{
+    color: greenyellow;
 }
 
 button:hover {
