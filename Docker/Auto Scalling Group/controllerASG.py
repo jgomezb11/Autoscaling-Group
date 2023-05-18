@@ -12,7 +12,8 @@ ec2_client = boto3.client(
     'ec2',
     aws_access_key_id=os.getenv("ACCESS_KEY"),
     aws_secret_access_key=os.getenv("SECRET_KEY"),
-    aws_session_token=os.getenv("SESSION_TOKEN")
+    aws_session_token=os.getenv("SESSION_TOKEN"),
+    region_name="us-east-1"
 )
 
 def create_instances(count):
