@@ -1,5 +1,5 @@
 FROM httpd:2.4
 
-COPY ../../../Games_virtualization /usr/local/apache2/htdocs/
+COPY ./Games_vm /usr/local/apache2/htdocs/
 
 CMD ["httpd", "-D", "FOREGROUND"]

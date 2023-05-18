@@ -1,0 +1,4 @@
+grpcio==1.54.2
+grpcio-tools==1.54.2
+docker==6.1.2
+python-dotenv==1.0.0

@@ -4,5 +4,4 @@ grpcio-tools==1.54.2
 pymongo==4.3.3
 dash==2.9.3
 pandas==2.0.1
-docker==6.1.2
 python-dotenv==1.0.0
