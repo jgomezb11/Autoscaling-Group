@@ -74,7 +74,7 @@ app.layout = html.Div([
         ]
     ),
     html.H1('Instancias'),
-    dcc.Interval(id='interval-component', interval=5000, n_intervals=0),  # Actualiza cada 5 segundos
+    dcc.Interval(id='interval-component', interval=5000, n_intervals=0),
     html.Div(id='graphs-container')
 ])
 
@@ -90,8 +90,6 @@ app.layout = html.Div([
 )
 def guardar_configuracion(n_clicks, min_instances, max_instances, cpu_up_threshold, cpu_down_threshold, scale_up_factor, scale_down_factor):
     if n_clicks:
-        # Aquí puedes realizar las acciones que deseas con los valores obtenidos
-        # por ejemplo, guardarlos en la base de datos o realizar algún procesamiento adicional
         changes = {}
         if min_instances != None:
             changes["min_instances"] = min_instances
@@ -116,10 +114,8 @@ def guardar_configuracion(n_clicks, min_instances, max_instances, cpu_up_thresho
                     {'_id': config['_id']},
                     {'$set': changes}
                 )
-        # Puedes devolver un mensaje o cualquier otro contenido que desees mostrar
         return html.Label(id='label-output', children='Datos guardados correctamente.')
 
-    # Si no se ha hecho clic en el botón, no se muestra ningún mensaje
     return None
 
 @app.callback(Output('graphs-container', 'children'), Input('interval-component', 'n_intervals'))
