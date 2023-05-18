@@ -1,12 +1,7 @@
 syntax = "proto3";
 
-
 message Request {
   int32 code = 1;
-}
-
-message StatusResponse {
-  string status = 1;
 }
 
 message MemoryUsageResponse {
@@ -14,6 +9,5 @@ message MemoryUsageResponse {
 }
 
 service MonitorC {
-  rpc GetStatus (Request) returns (StatusResponse) {}
   rpc GetMemoryUsage (Request) returns (MemoryUsageResponse) {}
 }

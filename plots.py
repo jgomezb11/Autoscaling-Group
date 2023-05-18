@@ -126,16 +126,10 @@ def guardar_configuracion(n_clicks, min_instances, max_instances, cpu_up_thresho
 def update_graphs(n):
     global last_value_average
     graphs = []
-    status = collection.find_one()
-    min_i = status["min_instances"]
-    max_i = status["max_instances"]
-    cpu_up = status["cpu_up_threshold"]
-    cpu_down = status["cpu_down_threshold"]
-    scale_up = status["scale_up_factor"]
-    scale_down = status["scale_down_factor"]
+    status = collection.find_one()["status"]
     n = 0
     average = 0
-    for instance_status in status["status"]:
+    for instance_status in status:
         n = len(instance_status["memory_usage"])
         average += instance_status["memory_usage"][-1]
         data = {
@@ -185,7 +179,7 @@ def update_graphs(n):
                 dcc.Graph(figure=fig)
             ])
         )
-    n = len(status["status"])
+    n = len(status)
     fig_gauge  = go.Figure(go.Indicator(
         mode="gauge+number+delta",
         delta ={
