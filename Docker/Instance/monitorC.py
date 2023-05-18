@@ -14,8 +14,8 @@ class MonitorCServicer():
     def GetStatus(self, request, context):
         state = "NOT OK"
         try:
-            response = requests.get("http://app:80/")
-            if response.status == 200:
+            response = requests.get("http://app/")
+            if response.status_code == 200:
                 state = "OK"
         except:
             pass
