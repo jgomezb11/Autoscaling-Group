@@ -6,8 +6,11 @@ import plotly.express as px
 import plotly.graph_objs as go
 import pandas as pd
 from pymongo import MongoClient
+import os
 
-client = MongoClient("mongodb://localhost:27017")
+client = MongoClient(
+    "mongodb://" + os.getenv("IPMONGO") + ":" + os.getenv("PORTMONGO")
+)
 database = client["ASG"]
 collection = database["config"]
 
