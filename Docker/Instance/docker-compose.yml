@@ -22,3 +22,7 @@ services:
     networks:
       - status_red
     container_name: monitorc
+
+networks:
+  status_red:
+    driver: bridge
