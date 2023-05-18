@@ -3,6 +3,8 @@ from pymongo import (
     MongoClient,
 )
 import time
+from dotenv import load_dotenv
+import os
 
 ec2_client = boto3.client("ec2")
 
@@ -241,7 +243,10 @@ def update_from_database():
 
 if __name__ == "__main__":
     global client, database, collection, min_instances, max_instances, cpu_up_threshold, cpu_down_threshold, scale_up_factor, scale_down_factor
-    client = MongoClient("mongodb://localhost:27017")
+    load_dotenv()
+    client = MongoClient(
+        "mongodb://" + os.getenv("IPMONGO") + ":" + os.getenv("PORTMONGO")
+    )
     database = client["ASG"]
     collection = database["config"]
     initialize_db()

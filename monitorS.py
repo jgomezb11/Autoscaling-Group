@@ -11,6 +11,8 @@ from pymongo import (
 )
 import threading
 import time
+from dotenv import load_dotenv
+import os
 
 average_memory = 0
 
@@ -117,7 +119,10 @@ def get_average_memory_usage():
 
 if __name__ == "__main__":
     global client, database, collection, db_lock
-    client = MongoClient("mongodb://localhost:27017")
+    load_dotenv()
+    client = MongoClient(
+        "mongodb://" + os.getenv("IPMONGO") + ":" + os.getenv("PORTMONGO")
+    )
     database = client["ASG"]
     collection = database["config"]
     db_lock = threading.Lock()

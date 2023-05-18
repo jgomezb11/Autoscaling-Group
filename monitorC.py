@@ -1,9 +1,9 @@
-import time
 import grpc
 from concurrent import futures
 from monitorC_pb2 import StatusResponse, MemoryUsageResponse
 from monitorC_pb2_grpc import MonitorCServicer, add_MonitorCServicer_to_server
 import math
+import docker
 
 x = 0
 
@@ -12,7 +12,14 @@ class MonitorCServicer():
         self.memory_usage = 0
 
     def GetStatus(self, request, context):
-        return StatusResponse(status="OK")
+        state = "NOT OK"
+        try:
+            client = docker.DockerClient(base_url = 'tcp://host.docker.internal:2375')
+            if client.containers.get("app_instance").status == "running":
+                state = "OK"
+        except:
+            pass
+        return StatusResponse(status=state)
 
     def GetMemoryUsage(self, request, context):
         global x
