@@ -124,7 +124,7 @@ def scale_instances():
             new_instance_count = 1
         instances_to_create = new_instance_count - instance_count
         create_instances(instances_to_create)
-    elif cpu_usage < cpu_down_threshold and instance_count > min_instances:
+    elif (cpu_usage < cpu_down_threshold and instance_count > min_instances) or instance_count > max_instances:
         instances_to_terminate = int(
             min(instance_count * scale_down_factor, instance_count - min_instances)
         )
