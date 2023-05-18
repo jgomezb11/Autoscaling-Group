@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game 2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/game_2.css" />
+</head>
+
+<body>
+  <div class="GameOne">
+    <h1>Juego 2</h1>
+    <div class="button-game">
+      <a href="index.html" class="game-button" style="background-color:#FF5733;">
+        <span class="game-button-label">Inicio</span>
+      </a>
+      <a href="game_1.html" class="game-button" style="background-color:#336EFF;">
+        <span class="game-button-label">Juego 1</span>
+      </a>
+    </div>
+    <div class="wrapper">
+      <div class="stats-container">
+        <div id="moves-count"></div>
+        <div id="time"></div>
+      </div>
+      <div class="game-container"></div>
+      <button id="stop" class="hide">Stop Game</button>
+    </div>
+    <div class="controls-container">
+
+      <p id="result"></p>
+      <button id="start">Jugar</button>
+    </div>
+    <!-- Script -->
+    <script src="./js/game_2.js"></script>
+  </div>
+</body>
+
+</html>
