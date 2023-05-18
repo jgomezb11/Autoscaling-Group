@@ -3,7 +3,7 @@ from concurrent import futures
 from monitorC_pb2 import StatusResponse, MemoryUsageResponse
 from monitorC_pb2_grpc import MonitorCServicer, add_MonitorCServicer_to_server
 import math
-import docker
+import requests
 
 x = 0
 
@@ -14,8 +14,8 @@ class MonitorCServicer():
     def GetStatus(self, request, context):
         state = "NOT OK"
         try:
-            client = docker.DockerClient(base_url = 'tcp://host.docker.internal:2375')
-            if client.containers.get("app_instance").status == "running":
+            response = requests.get("http://app:80/")
+            if response.status == 200:
                 state = "OK"
         except:
             pass

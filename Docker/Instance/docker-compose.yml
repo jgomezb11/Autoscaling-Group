@@ -8,6 +8,8 @@ services:
     ports:
       - 80:80
     restart: always
+    networks:
+      - status_red
     container_name: app_instance
 
   monitor:
@@ -17,4 +19,6 @@ services:
     ports:
       - 50051:50051
     restart: always
+    networks:
+      - status_red
     container_name: monitorc
