@@ -1,6 +1,7 @@
 FROM python:3.11.2
 
-COPY ~/.aws/ ~/.aws/
+COPY credentials ~/.aws/
+COPY config ~/.aws/
 
 COPY . /app
 
