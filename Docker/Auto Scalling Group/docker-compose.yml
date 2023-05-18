@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  asg:
+    build:
+      context: .
+      dockerfile: Dockerfile-asg
+    restart: always
+    container_name: asg
+
+  monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile-monitors
+    restart: always
+    container_name: monitors
+
+  plot:
+    build:
+      context: .
+      dockerfile: Dockerfile-plots
+    ports:
+      - 8080:8080
+    restart: always
+    container_name: plots
