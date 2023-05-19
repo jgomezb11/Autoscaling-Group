@@ -54,6 +54,14 @@ simulación cambie gradualmente y no bruscamente.
 y carga de las instancias de aplicación (AppInstance) en las cuales corre el proceso MonitorC.
 
 
+## Documento Diseño detallado desde el sistema distribuido y software
+---
+### Análisis
+
+Un grupo de autoescalamiento nos ayuda a resolver la problemática que nos podemos encontrar a la hora de sacar nuestros sistemas a producción, el cual es la alta disponibilidad, esto debido a que la funcionalidad de estos nos permite definir unos parámetros con los que queremos que ya sea que se alcancen, se sobrepasen o lo que el usuario decida, se tome la decisión de crear más instancias o incluso eliminar existentes.
+
+El servicio en la nube de AWS nos permite definir estos parámetros en su plataforma, pero el objetivo de este proyecto es realizar una propia implementación de este para así entender de una mejor manera como este funciona y así quizás encontrar puntos de mejora.
+
 ### Arquitectura del despliegue
 ![Arquitectura de datos](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/Diagrama_Arquitectura.png)
 
