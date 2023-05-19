@@ -32,11 +32,26 @@ La finalidad de este proyecto es diseñar e implementar un servicio de autoescal
 ---
 #### Requisitos Funcionales:
 
-- **MonitorS**:
+- **ControllerASG**: Es un proceso o aplicación que corre en la misma instancia del MonitorS. Tiene
+acceso a toda la información recolectada por él el MonitorS por medio de memoria
+compartida. Este también deberá ejecutar las siguientes acciones:
+  * Se comunica con la API SDK de la nube para acceder y ejecutar el servicio de gestión de instancias EC2
+  * Deberá definir minInstances (no menor a dos), maxInstance (máx 5
+por el tipo de cuenta aws academy), y una política de creación y otra política de
+destrucción de instancias.
+  * Deberán definir un mecanismo para almacenamiento en el ControllerASG de toda
+esta información de configuración.
 
-- **ControllerASG**:
+- **MonitorC**: Es el proceso que tiene cada instancia el cual estará monitoreando como va la carga de procesador de la instancia a la cual pertenece, además deberá cumplir con lo siguiente:
+  * Ping/Pong o Heartbeat para detectar vivacidad de la instancia de la
+AppInstance
+  * GetMetrics: conjunto de métricas como Carga (medida entre 0 y 100% que
+mide la carga de una máquina), para efectos de este proyecto, se simuló y se fue modificando esta métrica. Se espera que esta función de
+simulación cambie gradualmente y no bruscamente.
+  * Registro y Desregistro del MonitorS
 
-- **MonitorC**:
+- **MonitorS**: Proceso principal de monitoreo que periódicamente consulta el estado de vivacidad
+y carga de las instancias de aplicación (AppInstance) en las cuales corre el proceso MonitorC.
 
 
 #### Requisitos No Funcionales:
@@ -51,13 +66,11 @@ La finalidad de este proyecto es diseñar e implementar un servicio de autoescal
 
 
 ### Arquitectura del despliegue
-![Arquitectura de datos](https://raw.githubusercontent.com/juan9572/MOM/main/Diagrams/Diagrama%20de%20arquitectura.png)
-
-### Arquitectura de clases
-![Arquitectura de datos](https://raw.githubusercontent.com/juan9572/MOM/main/Diagrams/Diagrama_de_clases.drawio.png)
+![Arquitectura de datos](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/Diagrama_Arquitectura.png)
 
 ### Arquitectura de datos
-![Arquitectura de datos](https://raw.githubusercontent.com/juan9572/MOM/main/Diagrams/Arquitectura%20de%20datos.png)
+![Arquitectura de datos](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/db-4.png)
+
 
 ## Documento de detalles/dependencia de implementación, instalación y ejecución
 ---
@@ -74,7 +87,7 @@ La finalidad de este proyecto es diseñar e implementar un servicio de autoescal
 | grpcio   | 1.53.0   | La librería grpc para Python proporciona una forma de utilizar gRPC en aplicaciones Python   |
 | grpcio-tools   | 1.53.0   | La librería grpc para Python proporciona herramientas para usar grpc   |
 
-### Instalacion
+### Instalacion y Ejecución
 
 Para instalar nuestra solucion en tus servidores es necesario que tengas instaladas todas las dependencias que fueron anteriormente listadas. De esta manera solo seria necesario compilar el archivo.proto que define el paso de mensajes por medio de gRPC para que todo funcione correctamente.
 
@@ -84,6 +97,168 @@ Para esto únicamente hace falta que ejecutes el siguiente comando, el cual inst
 pip install -r requirements.txt
 ```
 
+MONITORS:
 
-### Ejecución
+* Instalar Docker:
+
+- Desinstalar versiones antiguas de Docker usando el siguiente comando:
+
+sudo apt-get remove docker docker-engine docker.io containerd runc
+
+- Configurar el repositorio Ubuntu usando los siguientes comandos:
+
+```
+sudo apt-get update
+```
+```
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg
+```
+
+- Añadir la clave GPG oficial de Docker usando el siguiente comando:
+
+```
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+```
+
+- Usar el siguiente comando para configurar el repositorio:
+
+```
+echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+- Actualizar la lista de paquetes usando el siguiente comando:
+
+sudo apt-get update
+
+- Instalar Docker Engine, containerd y Docker Compose usando el siguiente comando:
+
+```
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+* Clonar repositorios
+
+sudo git clone https://github.com/jgomezb11/TET-P2.git
+
+- Hacer build de la imagen y correr los contenedores:
+
+cd TET-P2/Docker/Instance
+sudo docker compose up -d
+
+DATABASE:
+
+* Instalar mongodb:
+
+```
+sudo apt update && apt install dirmngr gnupg apt-transport-https ca-certificates software-properties-common
+sudo wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo apt-key add -
+sudo echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
+sudo apt update && sudo apt install -y mongodb-org
+sudo wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+sudo apt-get install -y mongodb-org
+sudo systemctl enable mongod
+sudo systemctl start mongod
+```
+```
+sudo nano /etc/mongod.conf
+```
+```
+bindIp: 0.0.0.0
+```
+```
+sudo systemctl restart mongod
+```
+
+Agregamos el documento a la base de datos de ASG en la colección config:
+
+{
+  "_id": {
+    "$oid": "64619b3dc46f0c7812d5086f"
+  },
+  "average_memory": 0,
+  "hosts": [],
+  "status": [],
+  "min_instances": 2,
+  "max_instances": 5,
+  "scale_up_factor": 2,
+  "scale_down_factor": 0.5,
+  "cpu_up_threshold": 70,
+  "cpu_down_threshold": 20
+}
+
+ASG:
+
+* Instalar docker:
+
+- Desinstalar versiones antiguas de Docker usando el siguiente comando:
+
+```
+sudo apt-get remove docker docker-engine docker.io containerd runc
+```
+
+- Configurar el repositorio Ubuntu usando los siguientes comandos:
+
+```
+sudo apt-get update
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg
+```
+
+- Añadir la clave GPG oficial de Docker usando el siguiente comando:
+
+```
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+```
+
+- Usar el siguiente comando para configurar el repositorio:
+
+```
+echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+- Actualizar la lista de paquetes usando el siguiente comando:
+
+```
+sudo apt-get update
+```
+
+- Instalar Docker Engine, containerd y Docker Compose usando el siguiente comando:
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+* Clonar repositorio:
+
+```
+sudo git clone https://github.com/jgomezb11/TET-P2.git
+```
+
+* Poner las credenciales, la región en las variables de entorno:
+
+```
+sudo nano TET-P2/Docker/Auto\ Scalling\ Group/.env
+```
+
+* Crear los contenedores y correrlos
+
+```
+cd TET-P2/Docker/Auto\ Scalling\ Group
+sudo docker compose up -d
+```
+
 ### Uso
