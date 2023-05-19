@@ -54,23 +54,8 @@ simulación cambie gradualmente y no bruscamente.
 y carga de las instancias de aplicación (AppInstance) en las cuales corre el proceso MonitorC.
 
 
-#### Requisitos No Funcionales:
-
-
-## Documento Diseño detallado desde el sistema distribuido y software
----
-### Análisis
-
-
-### Diseño
-
-
 ### Arquitectura del despliegue
 ![Arquitectura de datos](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/Diagrama_Arquitectura.png)
-
-### Arquitectura de datos
-![Arquitectura de datos](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/db-4.png)
-
 
 ## Documento de detalles/dependencia de implementación, instalación y ejecución
 ---
@@ -136,7 +121,9 @@ echo \
 
 - Actualizar la lista de paquetes usando el siguiente comando:
 
+```
 sudo apt-get update
+```
 
 - Instalar Docker Engine, containerd y Docker Compose usando el siguiente comando:
 
@@ -146,12 +133,16 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 
 * Clonar repositorios
 
+```
 sudo git clone https://github.com/jgomezb11/TET-P2.git
+```
 
 - Hacer build de la imagen y correr los contenedores:
 
+```
 cd TET-P2/Docker/Instance
 sudo docker compose up -d
+```
 
 DATABASE:
 
@@ -178,8 +169,13 @@ bindIp: 0.0.0.0
 sudo systemctl restart mongod
 ```
 
-Agregamos el documento a la base de datos de ASG en la colección config:
+### Agregamos el documento a la base de datos de ASG en la colección config:
+![](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/db-1.png)
+![](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/db-2.png)
+![](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/db-3.png)
+![](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/db-4.png)
 
+```
 {
   "_id": {
     "$oid": "64619b3dc46f0c7812d5086f"
@@ -194,6 +190,7 @@ Agregamos el documento a la base de datos de ASG en la colección config:
   "cpu_up_threshold": 70,
   "cpu_down_threshold": 20
 }
+```
 
 ASG:
 
@@ -262,3 +259,27 @@ sudo docker compose up -d
 ```
 
 ### Uso
+
+A la hora de ingresar al sistema lo primero con los que nos encontraremos sera con un panel de configuracion:
+
+![](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/plot-1.png)
+
+En donde podremos elegir los parámetros al nuestro interés:
+
+* Min Instances: Es el número mínimo de instancias que queremos que se estén ejecutando simultáneamente
+* Max Instances: Es el número máximo de instancias que queremos que se lleguen a estar ejecutando simultáneamente
+* CPU Up Threshold: Es el límite superior en el cual si se alcanza se aumenten la cantidad instancias actuales
+* CPU Down Threshold: Es el límite inferior en el cual si se alcanza queremos que se reduzcan la cantidad de instancias actuales
+* Scale Up Factor: Es el factor con el que queremos que en dado caso que se supere el límite superior definido de CPU, estas aumenten su cantidad. Ej: si se tiene en 2, cada vez que se supere el límite superior estas se duplican
+* Scale Down Factor: Es el factor con el que queremos que en dado caso que se supere el límite inferior definido de CPU, estas disminuyan su cantidad. Ej: si se tiene en 0.5, cada vez que se supere el límite inferior estas se reducen a la mitad
+
+Ademas de este panel, a continuacion podremos encontrar diferentes graficas sobre el estado de las instancias:
+
+1. El promedio de uso de CPU de todas las instancias actuales
+
+![](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/plot-2.png)
+
+2. Una grafica del cambio de uso de CPU por cada instancia activa.
+
+![](https://raw.githubusercontent.com/jgomezb11/TET-P2/main/static/plot-3.png)
+
